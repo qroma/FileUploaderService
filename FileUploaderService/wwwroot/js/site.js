@@ -1,44 +1,41 @@
-﻿//$('#submibBtn').on('click', function () {
-//    console.log("log111");
-//    $.ajax({
-//        // Your server script to process the upload
-//        url: '/home/upload',
-//        type: 'POST',
+﻿function checkFileSize() {
+    var input, file;
 
-//        // Form data
-//        data: new FormData($('#uploadForm')),
+    document.getElementById('results-section').style.display = 'block';
 
-//        // Tell jQuery not to process data or worry about content-type
-//        // You *must* include these options!
-//        cache: false,
-//        contentType: false,
-//        processData: false,
+    if (!window.FileReader) {
+        bodyAppend("p", "The file API isn't supported on this browser yet.");
+        return;
+    }
 
-//        // Custom XMLHttpRequest
-//        xhr: function () {
-//            var myXhr = $.ajaxSettings.xhr();
-//            if (myXhr.upload) {
-//                // For handling the progress of the upload
-//                myXhr.upload.addEventListener('progress', function (e) {
-//                    if (e.lengthComputable) {
-//                        $('progress').attr({
-//                            value: e.loaded,
-//                            max: e.total,
-//                        });
-//                    }
-//                }, false);
-//            }
-//            return myXhr;
-//        }
-//    });
-//});
+    input = document.getElementById('fileinput'); 
 
-//$(':file').on('change', function () {
-//    var file = this.files[0];
+    if (!input) {
+        bodyAppend("p", "Um, couldn't find the fileinput element.");
+    }
+    else if (!input.files) {
+        bodyAppend("p", "This browser doesn't seem to support the `files` property of file inputs.");
+    }
+    else if (!input.files[0]) {
+        bodyAppend("p", "Please select a file before clicking 'Load'");
+    }
+    else {
+        file = input.files[0];
+        var sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+        bodyAppend("p", "File " + file.name + " is " + file.size + " bytes in size (" + sizeInMB + " megabytes in size)");
 
-//    if (file.size > 1024) {
-//        alert('max upload size is 1k');
-//    }
+        if (sizeInMB > 1) {           
+            return false;
+        }
+        else {           
+            return false;
+        }
+    }             
+}
 
-//    // Also see .name, .type
-//});
+function bodyAppend(tagName, innerHTML) {
+    var div = document.getElementById('results');
+    var elm = document.createElement(tagName);
+    elm.innerHTML = innerHTML;
+    div.appendChild(elm);
+}

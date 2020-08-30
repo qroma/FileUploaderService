@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using FileUploaderService.Models;
 using Microsoft.AspNetCore.Http;
+using System.Net.Http.Headers;
 
 namespace FileUploaderService.Controllers
 {
@@ -25,13 +26,16 @@ namespace FileUploaderService.Controllers
         }
 
         [HttpPost]
-        public string Upload(IFormFile files)
+        public async Task<IActionResult> Upload(IFormFileCollection files)
         {
-            var files1 = Request.Form.Files;
-            if (files != null)
-                return "file uploaded";
-            else
-                return "err";
+            foreach (IFormFile source in files)
+            {
+                string filename = ContentDispositionHeaderValue.Parse(source.ContentDisposition).FileName.ToString().Trim('"');
+
+                filename = this.EnsureCorrectFilename(filename);
+            }
+
+            return Ok(new { text = "file is uploaded and processed" });
         }
 
         public IActionResult Privacy()
@@ -44,5 +48,14 @@ namespace FileUploaderService.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        private string EnsureCorrectFilename(string filename)
+        {
+            if (filename.Contains("\\"))
+                filename = filename.Substring(filename.LastIndexOf("\\") + 1);
+
+            return filename;
+        }
+
     }
 }
