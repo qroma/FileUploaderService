@@ -29,7 +29,7 @@ namespace FileUploaderService.Controllers
         {
             var files1 = Request.Form.Files;
             if (files != null)
-                return "file uploaded ";
+                return "file uploaded";
             else
                 return "err";
         }
