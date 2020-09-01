@@ -6,9 +6,9 @@
     <h1 class="display-4">Welcome!</h1>
     <p>Upload your file here</p>
 
-    <form id="uploadForm" name="uploadForm" action="/home/upload" enctype="multipart/form-data" method="post" onsubmit='return checkFileSize();'>       
+    <form id="uploadForm" name="uploadForm" action="/home/upload" enctype="multipart/form-data" method="post">       
             <input name="files" type="file" id='fileinput' accept=".csv,.xml, .txt" multiple />             
-            <input type="submit" value="Upload" />     
+            <input id="submit" type="submit" value="Upload" />     
     </form>
 
     <div id="results-section">

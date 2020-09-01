@@ -1,5 +1,34 @@
-﻿function checkFileSize() {
-    var input, file;
+﻿$('form#uploadForm').submit(function (e) {
+    e.preventDefault();
+
+    var input = document.getElementById('fileinput'); 
+    var files = input.files;
+    var formData = new FormData();
+    for (var i = 0; i != files.length; i++) {
+        formData.append("files", files[i]);
+    }
+
+    if (validateFile(input)) {
+        var actionurl = e.currentTarget.action;
+        $.ajax({
+            url: actionurl,
+            type: 'post',
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (data){
+                bodyAppend("p", "Sucess: Response - " + data);
+            },
+            error: function (error) {
+                bodyAppend("p", "Error: Response - " + error);
+            }
+        });
+        
+    }
+});
+
+function validateFile(input) {   
 
     document.getElementById('results-section').style.display = 'block';
 
@@ -8,7 +37,7 @@
         return;
     }
 
-    input = document.getElementById('fileinput'); 
+    //var input = document.getElementById('fileinput'); 
 
     if (!input) {
         bodyAppend("p", "Um, couldn't find the fileinput element.");
@@ -20,14 +49,27 @@
         bodyAppend("p", "Please select a file before clicking 'Load'");
     }
     else {
-        file = input.files[0];
+        var file = input.files[0];
         var sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-        bodyAppend("p", "File " + file.name + " is " + file.size + " bytes in size (" + sizeInMB + " megabytes in size)");
 
-        if (sizeInMB > 1) {           
+        if (sizeInMB > 1) {  
+            bodyAppend("p", "File " + file.name + " is " + file.size + " bytes in size (" + sizeInMB + " megabytes in size)" + "- File isn't valid");
             return false;
         }
-        else {           
+        else {                      
+            return true;
+        }
+        
+        var filename = file.val();
+        var parts = filename.split('.');
+        var extension = parts[parts.length - 1];
+
+        if (extension === "csv" || extension === "xml") {
+            bodyAppend("p", "File " + file.name + " is " + file.size + " bytes in size (" + sizeInMB + " megabytes in size) " + "with format " + extension + " - File is valid");
+            return true;
+        }
+        else {
+            bodyAppend("p", "File " + file.name + " is " + file.size + " bytes in size (" + sizeInMB + " megabytes in size)" + "- File isn't valid");
             return false;
         }
     }             
