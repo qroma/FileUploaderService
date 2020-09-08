@@ -20,10 +20,10 @@ $('form#uploadForm').submit(function (e) {
             contentType: false,
             processData: false,
             success: function (data){
-                bodyAppend("p", "Sucess: Response - " + data);
+                bodyAppend("Sucess: Response - " + data.text);
             },
             error: function (error) {
-                bodyAppend("p", "Error: Response - " + error);
+                bodyAppend("Error: Response - " + error);
             }
         });
         
@@ -56,12 +56,9 @@ function validateFile(input) {
         if (sizeInMB > 1) {  
             bodyAppend("File " + file.name + " is " + file.size + " bytes in size (" + sizeInMB + " megabytes in size)" + "- File isn't valid");
             return false;
-        }
-        else {                      
-            return true;
-        }
+        }      
         
-        var filename = file.val();
+        var filename = file.name;
         var parts = filename.split('.');
         var extension = parts[parts.length - 1];
 
@@ -70,7 +67,7 @@ function validateFile(input) {
             return true;
         }
         else {
-            bodyAppend("File " + file.name + " is " + file.size + " bytes in size (" + sizeInMB + " megabytes in size)" + "- File isn't valid");
+            bodyAppend("File " + file.name + " is " + file.size + " bytes in size (" + sizeInMB + " megabytes in size)" + "with format " + extension + "- File isn't valid");
             return false;
         }
     }             

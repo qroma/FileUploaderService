@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using FileUploaderService.Models;
 using Microsoft.AspNetCore.Http;
-using System.Net.Http.Headers;
+using System.Text;
+using System.IO;
+using System.Xml.Serialization;
 
 namespace FileUploaderService.Controllers
 {
@@ -28,34 +27,54 @@ namespace FileUploaderService.Controllers
         [HttpPost]
         public async Task<IActionResult> Upload(IFormFileCollection files)
         {
-            foreach (IFormFile source in files)
+            try 
             {
-                string filename = ContentDispositionHeaderValue.Parse(source.ContentDisposition).FileName.ToString().Trim('"');
-
-                filename = this.EnsureCorrectFilename(filename);
+                foreach (IFormFile file in files)
+                {
+                    var xml = ReadAsString(file);
+                    var xmlModel = ParseXml<Transactions>(xml);
+                }
             }
-
+            catch (Exception e) {
+                return BadRequest();
+            }
+            
             return Ok(new { text = "file is uploaded and processed" });
+        }
+
+        private string ReadAsString(IFormFile file)
+        {
+            var result = new StringBuilder();
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                while (reader.Peek() >= 0)
+                    result.AppendLine(reader.ReadLine());
+            }
+            return result.ToString().Trim();
+        }        
+
+        protected T ParseXml<T>(String xml)
+        {
+            T returnedXmlClass = default(T);
+
+            try
+            {
+                using (TextReader reader = new StringReader(xml))
+                {                   
+                        returnedXmlClass = (T)new XmlSerializer(typeof(T)).Deserialize(reader);                                    
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+            return returnedXmlClass;
         }
 
         public IActionResult Privacy()
         {
             return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        private string EnsureCorrectFilename(string filename)
-        {
-            if (filename.Contains("\\"))
-                filename = filename.Substring(filename.LastIndexOf("\\") + 1);
-
-            return filename;
-        }
+        }                
 
     }
 }
