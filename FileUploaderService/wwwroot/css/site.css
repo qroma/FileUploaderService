@@ -72,15 +72,12 @@ progress {
 #results {
     margin-top: 20px;
     border: 2px solid gray;
+    min-height: 50px;
     padding-top: 10px;
 }
 
 .results-header {
     margin-top: 10px;
-}
-
-#results-section {
-    display: none;
 }
 
 .footer {

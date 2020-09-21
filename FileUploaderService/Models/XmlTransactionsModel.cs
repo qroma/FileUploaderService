@@ -1,30 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace FileUploaderService.Models
 {
     [Serializable()]
-    //[XmlRoot("Transactions")]
     [XmlRoot("TransactionCollection")]
-    public class Transactions
+    public class XmlTransactionsModel
     {
-        //[XmlArray("Cars")]
-        //[XmlAttribute("Transaction", typeof(Transaction))]
         [XmlArray("Transactions")]
-        [XmlArrayItem("Transaction", typeof(Transaction))]
-        public Transaction[] TransactionsCollection { get; set; }
+        [XmlArrayItem("Transaction", typeof(TransactionXml))]
+        public List<TransactionXml> TransactionsCollection { get; set; }
     }
 
-    [Serializable()]
-    public class Transaction
+    [Serializable()]   
+    public class TransactionXml
     {       
         [XmlElement("TransactionDate")]
         [Required(ErrorMessage = "TransactionDate is required")]
-        //[DataType(DataType.DateTime)]
         public DateTime TransactionDate { get; set; }
 
         [XmlElement("Status")]

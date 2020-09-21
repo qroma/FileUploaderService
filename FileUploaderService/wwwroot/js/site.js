@@ -4,13 +4,17 @@ $('form#uploadForm').submit(function (e) {
 
     var input = document.getElementById('fileinput'); 
     var files = input.files;
+    var isAtLeastOneFileAdded = false;
     var formData = new FormData();
     for (var i = 0; i != files.length; i++) {
-        formData.append("files", files[i]);
+        if (isValidFile(files[i])) {
+            formData.append("files", files[i]);
+            isAtLeastOneFileAdded = true;
+        }        
     }
 
     //validate before sending
-    if (validateFile(input)) {
+    if (isAtLeastOneFileAdded) {
         var actionurl = e.currentTarget.action;
         $.ajax({
             url: actionurl,
@@ -19,38 +23,40 @@ $('form#uploadForm').submit(function (e) {
             cache: false,
             contentType: false,
             processData: false,
-            success: function (data){
+            success: function (data) {
                 bodyAppend("Sucess: Response - " + data.text);
             },
             error: function (error) {
                 bodyAppend("Error: Response - " + error);
             }
         });
-        
+    }
+    else {
+        bodyAppend("There is not valid files attached");
     }
 });
 
 //checking file format and size
-function validateFile(input) {   
+function isValidFile(file) {   
 
-    document.getElementById('results-section').style.display = 'block';
+    //document.getElementById('results-section').style.display = 'block';
 
-    if (!window.FileReader) {
-        bodyAppend("The file API isn't supported on this browser yet.");
-        return;
-    }
+    //if (!window.FileReader) {
+    //    bodyAppend("The file API isn't supported on this browser yet.");
+    //    return;
+    //}
 
-    if (!input) {
-        bodyAppend("Um, couldn't find the fileinput element.");
-    }
-    else if (!input.files) {
-        bodyAppend("This browser doesn't seem to support the `files` property of file inputs.");
-    }
-    else if (!input.files[0]) {
-        bodyAppend("Please select a file before clicking 'Load'");
-    }
-    else {
-        var file = input.files[0];
+    //if (!input) {
+    //    bodyAppend("Um, couldn't find the fileinput element.");
+    //}
+    //else if (!input.files) {
+    //    bodyAppend("This browser doesn't seem to support the `files` property of file inputs.");
+    //}
+    //else if (!input.files[0]) {
+    //    bodyAppend("Please select a file before clicking 'Load'");
+    //}
+    /*else*/ {
+        //var file = input.files[0];
         var sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
 
         if (sizeInMB > 1) {  
@@ -75,6 +81,7 @@ function validateFile(input) {
 
 //html element appender
 function bodyAppend(innerHTML) {
+    //document.getElementById('results-section').style.display = 'block';
     var div = document.getElementById('results');
     var elm = document.createElement('p');
     elm.innerHTML = innerHTML;
