@@ -10,6 +10,7 @@ using System.Xml.Serialization;
 using Microsoft.VisualBasic.FileIO;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace FileUploaderService.Controllers
 {
@@ -37,25 +38,113 @@ namespace FileUploaderService.Controllers
                 foreach (IFormFile file in files)
                 {
                     var extension = Path.GetExtension(file.FileName).ToLower();
-                    if (extension == XmlFileExtension) {
+                    if (extension == XmlFileExtension)
+                    {
                         var xml = ReadFileAsString(file);
                         var xmlModel = ParseXml<XmlTransactionsModel>(xml);
+                        if (ValidModel(xmlModel))
+                        {
+
+                        }
+                        else
+                        {
+                            return BadRequest(new { text = "Model is not valid" });
+                        }
                     }
-                    else if (extension == CsvFileExtension) {
-                        //var csv = ReadFileAsString(file);
+                    else if (extension == CsvFileExtension)
+                    {
                         var csvModel = ParseCsv(file);
+                        if (ValidModel(csvModel))
+                        {
+
+                        }
+                        else
+                        {
+                            return BadRequest(new { text = "Model is not valid" });
+                        }
                     }
-                    else {
+                    else
+                    {
                         return BadRequest(new { text = "wrong file extension" });
                     }
-                    
+
                 }
             }
-            catch (Exception e) {
-                return BadRequest(new { text = "exception"});
+            catch (Exception e)
+            {
+                return BadRequest(new { text = "exception" });
             }
-            
+
             return Ok(new { text = "file is uploaded and processed" });
+        }
+
+        private bool ValidModel(CsvTransactionsModel csvModel)
+        {
+            bool isValidModel = true;
+
+            foreach (var item in csvModel.TransactionsCollection)
+            {
+                if (item.TransactionIdentifier == null || item.TransactionIdentifier == string.Empty || item.TransactionIdentifier.Length > 50)
+                {
+                    isValidModel = false;
+                    _logger.LogError($"Validation Error for item ID - {item.TransactionIdentifier}. Field - {item.TransactionIdentifier}");
+                }
+                if (item.Amount == 0)
+                {
+                    isValidModel = false;
+                    _logger.LogError($"Validation Error for item ID - {item.TransactionIdentifier}. Field - {item.Amount}");
+                }
+                if (!isCurrencyCode(item.CurrencyCode))
+                {
+                    isValidModel = false;
+                    _logger.LogError($"Validation Error for item ID - {item.TransactionIdentifier}. Field - {item.CurrencyCode}");
+                }
+            }
+
+            return isValidModel;
+        }
+
+        private bool isCurrencyCode(string ISOCurrencySymbol)
+        {
+            var symbol = CultureInfo.GetCultures(CultureTypes.AllCultures).Where(c => !c.IsNeutralCulture).Select(culture =>
+            {
+                try
+                {
+                    return new RegionInfo(culture.Name);
+                }
+                catch
+                {
+                    return null;
+                }
+            }).Where(ri => ri != null && ri.ISOCurrencySymbol == ISOCurrencySymbol).Select(ri => ri.CurrencySymbol).FirstOrDefault();
+
+            return symbol != null;
+        }
+
+        private bool ValidModel(XmlTransactionsModel xmlModel)
+        {
+            bool isValidModel = true;
+
+            foreach (var item in xmlModel.TransactionsCollection)
+            {
+                if (item.id == null || item.id.Length > 50)
+                {
+                    isValidModel = false;
+                    _logger.LogError($"Validation Error for item ID - {item.id}. Field - {item.id}");
+                }
+                if (item.PaymentDetails.Amount == 0)
+                {
+                    isValidModel = false;
+                    _logger.LogError($"Validation Error for item ID - {item.id}. Field - {item.PaymentDetails.Amount}");
+                }
+                if (!isCurrencyCode(item.PaymentDetails.CurrencyCode))
+                {
+                    isValidModel = false;
+                    _logger.LogError($"Validation Error for item ID - {item.id}. Field - {item.PaymentDetails.CurrencyCode}");
+                }
+            }
+
+            return isValidModel;
         }
 
         private string ReadFileAsString(IFormFile file)
@@ -64,7 +153,7 @@ namespace FileUploaderService.Controllers
             return reader.ReadToEnd();
         }
 
-        private CsvTransactionsModel ParseCsv(IFormFile file) 
+        private CsvTransactionsModel ParseCsv(IFormFile file)
         {
             CsvTransactionsModel csvModel = new CsvTransactionsModel();
 
@@ -86,7 +175,7 @@ namespace FileUploaderService.Controllers
                         CurrencyCode = fields[2],
                         TransactionDate = Convert.ToDateTime(fields[3]),
                         Status = (CsvStatusEnum)Enum.Parse(typeof(CsvStatusEnum), fields[4])
-                    });                  
+                    });
                 }
             }
             catch (Exception e)
@@ -96,7 +185,7 @@ namespace FileUploaderService.Controllers
             return csvModel;
         }
 
-        private int ToInt(string num) 
+        private int ToInt(string num)
         {
             num = num.Replace(",", "");
             int index = num.IndexOf('.');
@@ -123,7 +212,7 @@ namespace FileUploaderService.Controllers
         public IActionResult Privacy()
         {
             return View();
-        }                
+        }
 
     }
 }

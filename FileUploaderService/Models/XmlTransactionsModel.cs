@@ -16,7 +16,10 @@ namespace FileUploaderService.Models
 
     [Serializable()]   
     public class TransactionXml
-    {       
+    {
+        [XmlAttribute]
+        public string id { get; set; }
+
         [XmlElement("TransactionDate")]
         [Required(ErrorMessage = "TransactionDate is required")]
         public DateTime TransactionDate { get; set; }
